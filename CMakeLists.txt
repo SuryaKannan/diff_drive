@@ -33,6 +33,7 @@ catkin_install_python(
         nodes/diff_drive_controller
         nodes/diff_drive_go_to_goal
 	nodes/diff_drive_mock_robot
+        nodes/diff_drive_mock_robot
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 catkin_python_setup()
