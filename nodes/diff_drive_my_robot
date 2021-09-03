@@ -6,18 +6,12 @@ import RPi.GPIO as GPIO
 from actionlib_msgs.msg import GoalID
 from std_msgs.msg import Float32
 
-class MyRobotNode():
+class MyRobotGPIO():
     def __init__(self):
-        rospy.init_node('diff_drive_my_robot')
-        rospy.Subscriber('/lwheel_desired_rate', Int32, self.leftCallback)
-        rospy.Subscriber('/rwheel_desired_rate', Int32, self.rightCallback)
-        rospy.Subscriber('/diff_drive_go_to_goal/distance_to_goal',Float32,self.dist_to_goal)
-        self.goal_reached = rospy.Publisher('/diff_drive_go_to_goal/cancel',GoalID,queue_size=10)
-        self.outR = 33
-        self.outL = 32
+        self.outR = 32
+        self.outL = 33
         self.dirR = 11
-        self.dirL = 12  
-        self.stopped = True
+        self.dirL = 12
         GPIO.setmode(GPIO.BOARD) #use numbering system on board 
         GPIO.setup(self.outR,GPIO.OUT) # similar to arduino
         GPIO.setup(self.dirR,GPIO.OUT)
@@ -31,22 +25,17 @@ class MyRobotNode():
         self.pwmL.ChangeDutyCycle(0)
         GPIO.output(self.dirR,True)
         GPIO.output(self.dirL,True)
+        
 
-    '''
-    def get_tick_rates(self):
-        last_left_ticks = round(self.ticks[2])
-        last_right_ticks = round(self.ticks[3])
-        last_time = time.time()
-        time.sleep(0.05)
-        new_left_ticks = round(self.ticks[2])
-        new_right_ticks = round(self.ticks[3])
-        new_time = time.time()
-        if new_time > last_time:
-            left_rate = (new_left_ticks - last_left_ticks) / (new_time - last_time)
-            right_rate = (new_right_ticks - last_right_ticks) / (new_time - last_time)
-            self.tick_rates = [left_rate,right_rate]
-            print(self.tick_rates)
-    '''
+class MyRobotNode():
+    def __init__(self):
+        rospy.init_node('diff_drive_my_robot')
+        rospy.Subscriber('/lwheel_desired_rate', Int32, self.leftCallback)
+        rospy.Subscriber('/rwheel_desired_rate', Int32, self.rightCallback)
+        rospy.Subscriber('/diff_drive_go_to_goal/distance_to_goal',Float32,self.dist_to_goal)
+        self.goal_reached = rospy.Publisher('/diff_drive_go_to_goal/cancel',GoalID,queue_size=10)
+        self.stopped = True
+        self.gpio = MyRobotGPIO()
 
     def dist_to_goal(self,dist):
         self.stopped = False
@@ -55,21 +44,19 @@ class MyRobotNode():
             cancel.stamp = rospy.Time.now()
             cancel.id = ''
             self.goal_reached.publish(cancel)
-            self.pwmL.ChangeDutyCycle(0)
-            self.pwmR.ChangeDutyCycle(0)
+            self.gpio.pwmL.ChangeDutyCycle(0)
+            self.gpio.pwmR.ChangeDutyCycle(0)
             self.stopped = True
 
     def leftCallback(self,left_data):
         if self.stopped == False:
-            self.pwmL.ChangeDutyCycle(int(self.pwm_map(left_data.data)))
+            self.gpio.pwmL.ChangeDutyCycle(int(self.pwm_map(left_data.data)))
             #print("left: ",int(self.pwm_map(left_data.data)))
         
-      
     def rightCallback(self,right_data):
          if self.stopped == False:
-            self.pwmR.ChangeDutyCycle(int(self.pwm_map(right_data.data)))
+            self.gpio.pwmR.ChangeDutyCycle(int(self.pwm_map(right_data.data)))
             #print("right: ",int(self.pwm_map(right_data.data)))
-        
         
     def pwm_map(self,tick_rate):
         if tick_rate > 0:
