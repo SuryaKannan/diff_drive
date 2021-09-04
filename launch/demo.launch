@@ -1,25 +1,7 @@
 <launch>
 
-  <arg name="ticks_per_meter" value="350" />
-  <arg name="wheel_separation" value="0.0675" />
-
-  <node pkg="tf2_ros" type="static_transform_publisher" name="robot_broadcaster" args="-0.5 0 0 0 0 0 1 base_link odom"> </node>
-
-  <arg name="urdf_file" default="$(find diff_drive)/urdf/diff_drive_description.xacro" />
-  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg urdf_file)" />
-
-  <!-- Publish the robot state -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher"
-        type="robot_state_publisher">
-    <param name="publish_frequency" value="10.0"/>
-  </node>
-
-  <!-- Provide simulated control of the robot joint angles -->
-  <node name="joint_state_publisher" pkg="joint_state_publisher"
-        type="joint_state_publisher">
-    <param name="use_gui" value="False" />
-    <param name="rate" value="10.0"/>
-  </node>
+  <arg name="ticks_per_meter" value="270" />
+  <arg name="wheel_separation" value="0.12" />
 
   <node name="controller" pkg="diff_drive" type="diff_drive_controller"
         output="screen">
@@ -40,14 +22,6 @@
     </rosparam>
   </node>
 
-  <!--node name="robot" pkg="diff_drive" type="diff_drive_mock_robot"
-        output="screen">
-    <remap from="~lwheel_desired_rate" to="lwheel_desired_rate" />
-    <remap from="~rwheel_desired_rate" to="rwheel_desired_rate" />
-    <remap from="~lwheel_ticks" to="lwheel_ticks" />
-    <remap from="~rwheel_ticks" to="rwheel_ticks" />
-  </node-->
-
   <node name="diff_drive_my_robot" pkg="diff_drive"
         type="diff_drive_my_robot" output="screen"> 
   </node>
@@ -57,11 +31,11 @@
     <param name="~rate" value="20" />
     <param name="~kP" value="3" />
     <param name="~kA" value="15" />
-    <param name="~kB" value="-1.5" />
-    <param name="~max_linear_speed" value="0.2" />
-    <param name="~min_linear_speed" value="0.05" />
-    <param name="~max_angular_speed" value="2" />
-    <param name="~min_angular_speed" value="0.1" />
+    <param name="~kB" value="-6" />
+    <param name="~max_linear_speed" value="0.21" />
+    <param name="~min_linear_speed" value="0.01" />
+    <param name="~max_angular_speed" value="2.5" />
+    <param name="~min_angular_speed" value="0.01" />
     <param name="~linear_tolerance" value="0.01" />
     <param name="~angular_tolerance" value="0.02" />
     <param name="~forwardMovementOnly" value="true" />
