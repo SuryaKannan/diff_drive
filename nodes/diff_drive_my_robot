@@ -38,7 +38,7 @@ class MyRobotNode():
 
     def dist_to_goal(self,dist):
         self.stopped = False
-        if dist.data < 0.05:
+        if dist.data < 0.03:
             cancel = GoalID()
             cancel.stamp = rospy.Time.now()
             cancel.id = ''
@@ -49,17 +49,17 @@ class MyRobotNode():
 
     def leftCallback(self,left_data):
         if self.stopped == False:
-            self.gpio.pwmL.ChangeDutyCycle(int(self.pwm_map(left_data.data)))
+            self.gpio.pwmL.ChangeDutyCycle(int(self.pwm_map(left_data.data/2)))
             #print("left: ",int(self.pwm_map(left_data.data)))
         
     def rightCallback(self,right_data):
          if self.stopped == False:
-            self.gpio.pwmR.ChangeDutyCycle(int(self.pwm_map(right_data.data)))
+            self.gpio.pwmR.ChangeDutyCycle(int(self.pwm_map(right_data.data)/2))
             #print("right: ",int(self.pwm_map(right_data.data)))
         
     def pwm_map(self,tick_rate):
         if tick_rate > 0:
-            return round((95/48)*tick_rate+5)
+            return round((95/24)*tick_rate+5)
 
 if __name__ == '__main__':
     try:
