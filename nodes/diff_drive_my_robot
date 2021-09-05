@@ -45,9 +45,10 @@ class MyRobotNode():
         self.front_range = 0
         self.right_range = 0
         self.left_range = 0
-        self.error_range = 13
+        self.error_range = 20
         self.z_orientation = 0
-        self.delta = 3
+        self.x_orientation = 0
+        self.delta = 0.5
         self.forward_speed = 30
 
     def forward(self):
@@ -61,11 +62,13 @@ class MyRobotNode():
     def avoidance(self):
         while self.z_orientation > 0.02:
             self.gpio.pwmR.ChangeDutyCycle(self.forward_speed) # turn until 90 degrees perpendicular to object
-        #self.forward()
-        #time.sleep(self.delta)
+        self.forward() # travel a safe distance away from obstacle
+        time.sleep(self.delta)
         create_goal = GoToPoseActionGoal()
         create_goal.goal.pose.pose.position.x = 0.30
         create_goal.goal.pose.pose.position.y = -0.30
+        create_goal.goal.pose.pose.orientation.x = 0
+        create_goal.goal.pose.pose.orientation.y = 0
         create_goal.goal.pose.pose.orientation.z = 0.7
         create_goal.goal.pose.pose.orientation.w = -0.7
         self.goal_create.publish(create_goal)
@@ -79,8 +82,6 @@ class MyRobotNode():
         
         if sensorData.header.frame_id == "left":
             self.left_range = sensorData.range
-        
-        #print("f :", self.front_range,"l :", self.left_range,"r :", self.right_range)
         
         if self.front_range <= self.error_range and self.front_range and self.stopped == False:
             self.cancel_goal()
@@ -97,15 +98,16 @@ class MyRobotNode():
     
     def orientation(self,odomData):
         self.z_orientation = odomData.pose.pose.orientation.z
+        self.x_position = odomData.pose.pose.position.x
 
     def dist_to_goal(self,dist):
         self.stopped = False #only resume planning once a goal has been provided
-        if dist.data < 0.025:
+        if dist.data < 0.01:
             self.cancel_goal()
 
     def leftCallback(self,left_data):
         if self.stopped == False and left_data:
-            self.gpio.pwmL.ChangeDutyCycle(int(self.pwm_map(left_data.data/2)))
+            self.gpio.pwmL.ChangeDutyCycle(int(self.pwm_map(left_data.data)/2))
             #print("left: ",int(self.pwm_map(left_data.data)))
         
     def rightCallback(self,right_data):
@@ -114,7 +116,7 @@ class MyRobotNode():
             #print("right: ",int(self.pwm_map(right_data.data)))
         
     def pwm_map(self,tick_rate):
-        if tick_rate > 0:
+        if tick_rate > 0 and tick_rate:
             return round((95/24)*tick_rate+5) #linear mapping based on lowest and highest PWM duty cycle 
 
 if __name__ == '__main__':
